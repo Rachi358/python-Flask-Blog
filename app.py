@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from flask_mail import Mail
+from flask_mail import Mail, Message
 import os, json, math
 
 # ------------------------
@@ -13,6 +13,11 @@ import os, json, math
 # ------------------------
 with open("config.json", "r", encoding="utf-8") as f:
     params = json.load(f)["params"]
+
+# Override with env vars in production
+params["gmail_user"] = os.getenv("GMAIL_USER", params["gmail_user"])
+params["gmail_password"] = os.getenv("GMAIL_PASS", params["gmail_pass"])
+
 
 # ------------------------
 # App / Config
@@ -25,8 +30,11 @@ app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
-    MAIL_USERNAME=params.get("gmail_user", ""),
-    MAIL_PASSWORD=params.get("gmail_pass", ""),
+    # MAIL_USERNAME=params.get("gmail_user", ""),
+    # MAIL_PASSWORD=params.get("gmail_pass", ""),
+    MAIL_USERNAME=os.getenv("GMAIL_USER", params.get("gmail_user", "")),
+    MAIL_PASSWORD=os.getenv("GMAIL_PASS", params.get("gmail_pass", "")),
+    MAIL_SUPPRESS_SEND=False  # change to True for testing (no real emails)
 )
 mail = Mail(app)
 
@@ -209,7 +217,7 @@ def delete(sr_no):
     flash("Post deleted successfully!", "info")
     return redirect(url_for("dashboard"))
 
-# ---------- Uploads ----------
+# --- Uploads ---
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if not is_admin_logged_in():
@@ -220,6 +228,7 @@ def upload():
         if not file or file.filename == "":
             flash("No file selected.", "error")
             return redirect(request.url)
+
         if not allowed_file(file.filename):
             flash("Invalid file type.", "error")
             return redirect(request.url)
@@ -230,12 +239,10 @@ def upload():
         flash("Uploaded successfully.", "success")
         return redirect(url_for("dashboard"))
 
-    return """
-    <form method="post" enctype="multipart/form-data">
-      <input type="file" name="file1">
-      <button type="submit">Upload</button>
-    </form>
-    """
+    # return render_template("upload.html")
+    return """ <form method="post" enctype="multipart/form-data">
+    <input type="file" name="file1"> <button type="submit">Upload</button> 
+    </form> """
 
 # ---------- Search ----------
 @app.route("/search")
