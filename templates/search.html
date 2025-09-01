@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block body %}
+<header class="masthead" style="background-image: url('{{ url_for('static', filename='assets/img/search-bg.jpg') }}')">
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="site-heading">
+          <h1>Search Posts</h1>
+          <span class="subheading">Find what you’re looking for</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="container py-4">
+    <h3 class="mb-3">Search</h3>
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input class="form-control" name="q" value="{{ q }}" placeholder="Search posts">
+            <button class="btn btn-primary">Search</button>
+        </div>
+    </form>
+
+    {% if q %}
+    <p class="text-muted">Results for: <strong>{{ q }}</strong></p>
+    <hr />
+    {% for p in results %}
+    <div class="mb-4">
+        <a href="{{ url_for('post', post_slug=p.slug) }}">
+            <h5 class="mb-1">{{ p.title }}</h5>
+        </a>
+        <small class="text-muted">{{ p.date.strftime('%Y-%m-%d') }}</small>
+        <p class="mb-0">{{ (p.content or '')[:160] }}...</p>
+    </div>
+    {% else %}
+    <p>No results found.</p>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

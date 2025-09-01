@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block body %}
+<header class="masthead" style="background-image: url('{{ url_for('static', filename='assets/img/home-bg.jpg') }}')">
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="site-heading">
+          <h1>500</h1>
+          <span class="subheading">Internal Server Error</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="container px-4 px-lg-5">
+  <div class="row gx-4 gx-lg-5 justify-content-center">
+    <div class="col-md-10 col-lg-8 col-xl-7 text-center py-5">
+      <h2>Something Went Wrong</h2>
+      <p class="lead">We’re experiencing some technical difficulties. Please try again later.</p>
+      <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-2">
+        <i class="fas fa-home"></i> Go Home
+      </a>
+      <button onclick="window.location.reload()" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-redo"></i> Try Again
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
