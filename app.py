@@ -5,44 +5,44 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from flask_mail import Mail, Message
+from flask_mail import Mail
 import os, json, math
+from dotenv import load_dotenv
 
 # ------------------------
-# Load config.json safely
+# Load environment & config
 # ------------------------
+load_dotenv()
+
+# Load UI/public params from config.json
 with open("config.json", "r", encoding="utf-8") as f:
     params = json.load(f)["params"]
 
-# Override with env vars in production
-params["gmail_user"] = os.getenv("GMAIL_USER", params["gmail_user"])
-params["gmail_password"] = os.getenv("GMAIL_PASS", params["gmail_pass"])
-
+# Override with secrets from .env
+params["admin_username"] = os.getenv("ADMIN_USERNAME", "")
+params["admin_password"] = os.getenv("ADMIN_PASSWORD", "")
+params["gmail_user"] = os.getenv("GMAIL_USER", "")
+params["gmail_pass"] = os.getenv("GMAIL_PASS", "")
 
 # ------------------------
 # App / Config
 # ------------------------
 app = Flask(__name__, static_folder="static", template_folder="templates")
-app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
 
 # Mail
 app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
-    # MAIL_USERNAME=params.get("gmail_user", ""),
-    # MAIL_PASSWORD=params.get("gmail_pass", ""),
-    MAIL_USERNAME=os.getenv("GMAIL_USER", params.get("gmail_user", "")),
-    MAIL_PASSWORD=os.getenv("GMAIL_PASS", params.get("gmail_pass", "")),
-    MAIL_SUPPRESS_SEND=False  # change to True for testing (no real emails)
+    MAIL_USERNAME=params.get("gmail_user", ""),
+    MAIL_PASSWORD=params.get("gmail_pass", ""),
+    MAIL_SUPPRESS_SEND=False
 )
 mail = Mail(app)
 
-# DB
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///blog.db") # Use DATABASE_URL from env or default to sqlite
-
-# For local development, you can uncomment the next line to use local_uri from config
-app.config["SQLALCHEMY_DATABASE_URI"] = params["local_uri"]
+# Database (Render will provide DATABASE_URL, fallback to SQLite)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///blog.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -177,7 +177,6 @@ def dashboard():
     if not is_admin_logged_in():
         return redirect(url_for("login"))
     posts = Posts.query.order_by(Posts.date.asc()).all()
-
     return render_template("dashboard.html", posts=posts)
 
 @app.route("/edit/<string:sr_no>", methods=["GET", "POST"])
@@ -242,7 +241,6 @@ def upload():
         flash("Uploaded successfully.", "success")
         return redirect(url_for("dashboard"))
 
-    # return render_template("upload.html")
     return """ <form method="post" enctype="multipart/form-data">
     <input type="file" name="file1"> <button type="submit">Upload</button> 
     </form> """
@@ -275,7 +273,6 @@ def internal_server_error(e):
 # ---------- Run ----------
 if __name__ == "__main__":
     app.run(debug=True)
-
 
 
 
