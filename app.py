@@ -10,19 +10,32 @@ import os, json, math
 from dotenv import load_dotenv
 
 # ------------------------
-# Load environment & config
+# Load config.json OR fallback to env
 # ------------------------
+params = {}
+
+# 1. Try to load from config.json (if it exists)
+if os.path.exists("config.json"):
+    with open("config.json", "r", encoding="utf-8") as f:
+        params = json.load(f)["params"]
+
+# 2. Override / fallback to environment variables
+params.update({
+    "blog_name": os.getenv("BLOG_NAME", params.get("blog_name", "My Blog")),
+    "local_uri": os.getenv("LOCAL_URI", params.get("local_uri", "sqlite:///blog.db")),
+    "production_uri": os.getenv("DATABASE_URL", params.get("production_uri", "sqlite:///blog.db")),
+    "no_of_posts": int(os.getenv("NO_OF_POSTS", params.get("no_of_posts", 5))),
+    "admin_username": os.getenv("ADMIN_USERNAME", params.get("admin_username", "admin")),
+    "admin_password": os.getenv("ADMIN_PASSWORD", params.get("admin_password", "password")),
+    "gmail_user": os.getenv("GMAIL_USER", params.get("gmail_user", "")),
+    "gmail_pass": os.getenv("GMAIL_PASS", params.get("gmail_pass", "")),
+    "fb_url": os.getenv("FB_URL", params.get("fb_url", "#")),
+    "tw_url": os.getenv("TW_URL", params.get("tw_url", "#")),
+    "github_url": os.getenv("GITHUB_URL", params.get("github_url", "#")),
+    "upload_folder": os.getenv("UPLOAD_FOLDER", params.get("upload_folder", "static/uploads")),
+    "SECRET_KEY": os.getenv("SECRET_KEY", params.get("SECRET_KEY", "super-secret")),
+})
 load_dotenv()
-
-# Load UI/public params from config.json
-with open("config.json", "r", encoding="utf-8") as f:
-    params = json.load(f)["params"]
-
-# Override with secrets from .env
-params["admin_username"] = os.getenv("ADMIN_USERNAME", "")
-params["admin_password"] = os.getenv("ADMIN_PASSWORD", "")
-params["gmail_user"] = os.getenv("GMAIL_USER", "")
-params["gmail_pass"] = os.getenv("GMAIL_PASS", "")
 
 # ------------------------
 # App / Config
