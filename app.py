@@ -21,7 +21,7 @@ if os.path.exists("config.json"):
 
 # 2. Override / fallback to environment variables
 params.update({
-    "blog_name": os.getenv("BLOG_NAME", params.get("blog_name", "My Blog")),
+    "blog_name": os.getenv("BLOG_NAME", params.get("blog_name", "TheCodingBlog")),
     "local_uri": os.getenv("LOCAL_URI", params.get("local_uri", "sqlite:///blog.db")),
     "production_uri": os.getenv("DATABASE_URL", params.get("production_uri", "sqlite:///blog.db")),
     "no_of_posts": int(os.getenv("NO_OF_POSTS", params.get("no_of_posts", 5))),
