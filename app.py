@@ -23,7 +23,7 @@ params["gmail_password"] = os.getenv("GMAIL_PASS", params["gmail_pass"])
 # App / Config
 # ------------------------
 app = Flask(__name__, static_folder="static", template_folder="templates")
-app.secret_key = "the-random-string"  # replace in production
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret-key")
 
 # Mail
 app.config.update(
@@ -39,6 +39,9 @@ app.config.update(
 mail = Mail(app)
 
 # DB
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///blog.db") # Use DATABASE_URL from env or default to sqlite
+
+# For local development, you can uncomment the next line to use local_uri from config
 app.config["SQLALCHEMY_DATABASE_URI"] = params["local_uri"]
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)

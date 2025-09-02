@@ -1,4 +1,4 @@
-# Byte-compiled / cache files
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
@@ -7,27 +7,29 @@ __pycache__/
 # Virtual environment
 venv/
 env/
+.venv/
 
-# IDE/editor files
+# Environment variables
+.env
+.env.*
+
+# Config files (local only)
+config.json
+
+# SQLite database
+*.db
+
+# VSCode / IDE files
 .vscode/
 .idea/
-*.swp
 
-# OS generated files
+# System files
 .DS_Store
 Thumbs.db
 
-# Flask specific
-instance/
-*.db
-*.sqlite3
-
-# Logs
-*.log
-
-# Secret configs
-config.json
-
-# Other
-*.bak
-*.tmp
+# Uploads (optional: if you don’t want uploaded files on GitHub)
+static/Upload_Files/
+static/uploads/
+.env
+blog.db
+.__pycache__/
