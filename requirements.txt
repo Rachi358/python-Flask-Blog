@@ -1,6 +1,6 @@
-Flask
-Flask-SQLAlchemy
-Flask-Mail
+flask
+flask_sqlalchemy
+flask_mail
 python-dotenv
 gunicorn
-pywhatkit>=5.4   # only if you actually use it
+pymysql
