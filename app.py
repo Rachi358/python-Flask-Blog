@@ -29,9 +29,9 @@ params.update({
     "admin_password": os.getenv("ADMIN_PASSWORD", params.get("admin_password", "password")),
     "gmail_user": os.getenv("GMAIL_USER", params.get("gmail_user", "")),
     "gmail_pass": os.getenv("GMAIL_PASS", params.get("gmail_pass", "")),
-    "fb_url": os.getenv("FB_URL", params.get("fb_url", "#")),
-    "tw_url": os.getenv("TW_URL", params.get("tw_url", "#")),
-    "github_url": os.getenv("GITHUB_URL", params.get("github_url", "#")),
+    "fb_url": os.getenv("FB_URL", params.get("fb_url", "https://facebook.com/")),
+    "tw_url": os.getenv("TW_URL", params.get("tw_url", "https://twitter.com/")),
+    "github_url": os.getenv("GITHUB_URL", params.get("github_url", "https://github.com/")),
     "upload_folder": os.getenv("UPLOAD_FOLDER", params.get("upload_folder", "static/uploads")),
     "SECRET_KEY": os.getenv("SECRET_KEY", params.get("SECRET_KEY", "super-secret")),
 })
