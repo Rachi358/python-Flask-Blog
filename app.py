@@ -10,16 +10,19 @@ import os, json, math
 from dotenv import load_dotenv
 
 # ------------------------
+# Load environment variables
+# ------------------------
+load_dotenv()
+
+# ------------------------
 # Load config.json OR fallback to env
 # ------------------------
 params = {}
 
-# 1. Try to load from config.json (if it exists)
 if os.path.exists("config.json"):
     with open("config.json", "r", encoding="utf-8") as f:
         params = json.load(f)["params"]
 
-# 2. Override / fallback to environment variables
 params.update({
     "blog_name": os.getenv("BLOG_NAME", params.get("blog_name", "TheCodingBlog")),
     "local_uri": os.getenv("LOCAL_URI", params.get("local_uri", "sqlite:///blog.db")),
@@ -35,7 +38,48 @@ params.update({
     "upload_folder": os.getenv("UPLOAD_FOLDER", params.get("upload_folder", "static/uploads")),
     "SECRET_KEY": os.getenv("SECRET_KEY", params.get("SECRET_KEY", "super-secret")),
 })
-load_dotenv()
+
+# ------------------------
+# App / Config
+# ------------------------
+app = Flask(__name__, static_folder="static", template_folder="templates")
+app.secret_key = params["SECRET_KEY"]
+
+# Mail
+app.config.update(
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME=params.get("gmail_user", ""),
+    MAIL_PASSWORD=params.get("gmail_pass", ""),
+    MAIL_SUPPRESS_SEND=False
+)
+mail = Mail(app)
+
+# ------------------------
+# Database Configuration
+# ------------------------
+database_url = params["production_uri"]
+
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
+
+# ------------------------
+# Uploads
+# ------------------------
+UPLOAD_FOLDER = params.get("upload_folder", "static/uploads")
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+def allowed_file(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ------------------------
 # App / Config
@@ -55,7 +99,7 @@ app.config.update(
 mail = Mail(app)
 
 # Database (Render will provide DATABASE_URL, fallback to SQLite)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///blog.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL") or params.get("local_uri", "sqlite:///blog.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
