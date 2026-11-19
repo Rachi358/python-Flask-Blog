@@ -9,15 +9,15 @@ from flask_mail import Mail
 import os, json, math
 from dotenv import load_dotenv
 
+
 # ------------------------
-# Load environment variables
+# Load Environment Variables
 # ------------------------
 load_dotenv()
 
 # ------------------------
-# Load config.json OR fallback to environment variables
+# Load Configuration
 # ------------------------
-
 params = {}
 
 if os.path.exists("config.json"):
@@ -27,7 +27,7 @@ if os.path.exists("config.json"):
 params.update({
     "blog_name": os.getenv("BLOG_NAME", params.get("blog_name", "TheCodingBlog")),
     "local_uri": os.getenv("LOCAL_URI", params.get("local_uri", "sqlite:///blog.db")),
-    "production_uri": os.getenv("DATABASE_URL", params.get("production_uri", "sqlite:///blog.db")),
+    "production_uri": os.getenv("DATABASE_URL", params.get("production_uri", "")),
     "no_of_posts": int(os.getenv("NO_OF_POSTS", params.get("no_of_posts", 5))),
     "admin_username": os.getenv("ADMIN_USERNAME", params.get("admin_username", "admin")),
     "admin_password": os.getenv("ADMIN_PASSWORD", params.get("admin_password", "password")),
@@ -41,12 +41,14 @@ params.update({
 })
 
 # ------------------------
-# App / Config
+# Flask Application
 # ------------------------
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.secret_key = params["SECRET_KEY"]
 
-# Mail
+# ------------------------
+# Mail Configuration
+# ------------------------
 app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
@@ -55,62 +57,16 @@ app.config.update(
     MAIL_PASSWORD=params.get("gmail_pass", ""),
     MAIL_SUPPRESS_SEND=False
 )
+
 mail = Mail(app)
 
 # ------------------------
 # Database Configuration
 # ------------------------
 database_url = (
-    os.getenv("DATABASE_URL")
-    or os.getenv("LOCAL_URI")
+    os.getenv("LOCAL_URI")
+    or os.getenv("DATABASE_URL")
     or params.get("local_uri", "sqlite:///blog.db")
-)
-
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db = SQLAlchemy(app)
-
-# ------------------------
-# Uploads
-# ------------------------
-UPLOAD_FOLDER = params.get("upload_folder", "static/uploads")
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-
-def allowed_file(filename: str) -> bool:
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-app = Flask(__name__, static_folder="static", template_folder="templates")
-
-app.secret_key = params["SECRET_KEY"]
-
-# ------------------------
-# Mail Configuration
-# ------------------------
-
-app.config.update(
-    MAIL_SERVER="smtp.gmail.com",
-    MAIL_PORT=465,
-    MAIL_USE_SSL=True,
-    MAIL_USERNAME=params.get("gmail_user", ""),
-    MAIL_PASSWORD=params.get("gmail_pass", ""),
-    MAIL_SUPPRESS_SEND=False
-)
-
-mail = Mail(app)
-
-# ------------------------
-# Database Configuration
-# ------------------------
-
-database_url = params.get(
-    "production_uri",
-    params.get("local_uri", "sqlite:///blog.db")
 )
 
 if database_url.startswith("postgres://"):
@@ -126,18 +82,18 @@ db = SQLAlchemy(app)
 # ------------------------
 # Upload Configuration
 # ------------------------
-
 UPLOAD_FOLDER = params.get("upload_folder", "static/uploads")
-
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
-
 def allowed_file(filename: str) -> bool:
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
 
 
 # ------------------------
